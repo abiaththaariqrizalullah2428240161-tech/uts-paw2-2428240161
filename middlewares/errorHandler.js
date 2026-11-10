@@ -1,43 +1,34 @@
-function errorHttp(status, message) {
-  const err = new Error(message);
-  err.status = status;
-  return err;
-}
-
 function notFoundHandler(req, res, next) {
-  next(errorHttp(404, `Rute ${req.method} ${req.originalUrl} tidak ditemukan`));
+  const error = new Error(`Rute ${req.originalUrl} tidak ditemukan`);
+  error.statusCode = 404;
+  next(error);
 }
 
 function errorHandler(err, req, res, next) {
-  // 1. JSON rusak dari client
-  if (err.type === 'entity.parse.failed') {
+  // Kesalahan saat parsing JSON oleh express.json()
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ message: 'Format JSON tidak valid' });
   }
-  // 2. ID tidak sesuai format ObjectId (mis. /mahasiswa/abc)
+
   if (err.name === 'CastError') {
-    return res.status(400).json({ message: `Nilai '${err.value}' tidak valid untuk field ${err.path}` });
+    return res.status(400).json({ message: 'ID tidak valid' });
   }
-  // 3. Pelanggaran aturan Schema (required, enum, dll.)
+
   if (err.name === 'ValidationError') {
-    // Pesan CastError bawaan menyebut nama model; diganti pesan yang aman
-    const detail = Object.values(err.errors).map((e) =>
-      e.name === 'CastError' ? `Nilai untuk ${e.path} tidak valid` : e.message
-    );
+    const detail = Object.values(err.errors).map(item => item.message);
     return res.status(400).json({ message: 'Data tidak valid', detail });
   }
-  // 4. Pelanggaran unique (kode error MongoDB 11000)
+
   if (err.code === 11000) {
-    const field = Object.keys(err.keyPattern || err.keyValue || {})[0];
-    const message = field ? `Nilai ${field} sudah dipakai` : 'Data duplikat';
-    return res.status(409).json({ message });
+    return res.status(409).json({ message: 'Nilai unik sudah digunakan' });
   }
-  // 5. Error yang sengaja dilempar lewat errorHttp()
-  if (err.status) {
-    return res.status(err.status).json({ message: err.message });
+
+  const status = err.statusCode || err.status || 500;
+  if (status >= 500) {
+    return res.status(500).json({ message: 'Terjadi kesalahan pada server' });
   }
-  // 6. Selain itu: kesalahan server. Detail hanya dicatat di log.
-  console.error(err);
-  res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+
+  return res.status(status).json({ message: err.message || 'Terjadi kesalahan' });
 }
 
-module.exports = { errorHttp, notFoundHandler, errorHandler };
+module.exports = { notFoundHandler, errorHandler };

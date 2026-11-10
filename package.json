@@ -1,25 +1,19 @@
 {
-  "name": "si5c_kuis1_mhafizhmuhyiddin",
+  "name": "uts-paw2-2428240161",
   "version": "1.0.0",
-  "description": "",
+  "description": "RESTful API Toko Pempek - Topik 36",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "seed": "node seed.js"
+    "dev": "nodemon app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.5",
-    "express": "^5.3.0",
-    "mongoose": "^9.11.4"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "mongoose": "^8.19.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.10"
   }
 }
